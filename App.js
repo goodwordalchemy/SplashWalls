@@ -4,6 +4,7 @@
  * @flow
  */
 
+import RandManager from './RandManager'
 import React, { Component } from 'react';
 import {
   ActivityIndicator,
@@ -12,7 +13,7 @@ import {
   Text,
   View
 } from 'react-native';
-import RandManager from './RandManager'
+import Swiper from 'react-native-swiper';
 
 const NUM_WALLPAPERS = 5;
 
@@ -68,13 +69,38 @@ class SplashWallsComponent extends Component<{}> {
 
       if (!isLoading) {
           return (
-              <View>
+              <Swiper
+                dot={
+                  <View 
+                    style={{
+                        backgroundColor: 'rgba(255,255,255,.4)',
+                        width: 8,
+                        height: 8,
+                        borderRadius: 10,
+                        marginLeft: 3,
+                        marginRight: 3,
+                        marginTop: 3,
+                        marginBottom: 3
+                    }} />}
+                activeDot={
+                    <View 
+                        style={{
+                            backgroundColor: '#fff',
+                            width: 13,
+                            height: 13,
+                            borderRadius: 7,
+                            marginLeft: 7,
+                            marginRight: 7
+                        }} />}
+                loop={false}
+                onMomentumScrollEnd={this.onMomentumScrollEnd} >
+
                 {wallsJSON.map((wallpaper, index) => {
                     return (
                         <Text key={index}>{wallpaper.id}</Text>
                     );
                 })}
-              </View>
+              </Swiper>
           );
       }
   }
