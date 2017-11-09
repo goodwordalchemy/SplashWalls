@@ -6,6 +6,7 @@
 
 import React, { Component } from 'react';
 import {
+  ActivityIndicator,
   Platform,
   StyleSheet,
   Text,
@@ -19,11 +20,9 @@ const instructions = Platform.select({
     'Shake or press menu button for dev menu',
 });
 
-class SplashWalls extends Component<{}> {
+class SplashWallsComponent extends Component<{}> {
   constructor(props) {
       super(props);
-
-      console.log('contstructing splashwalls component');
 
       this.state = {
           wallsJSON: [],
@@ -40,9 +39,33 @@ class SplashWalls extends Component<{}> {
        .then(response => response.json())
        .then(jsonData => {
           console.log(jsonData); 
+
+          this.setState({isLoading: false });
        })
     .catch(error => console.log('Fetch error ' + error));
 
+  }
+
+  renderLoadingMessage() {
+      return (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator
+                animating={true}
+                color={'#fff'}
+                size={'small'}
+                style={{margin: 15}} 
+                />
+            <Text style={{color: '#fff'}}>Contacting Unsplash</Text>
+          </View>
+      );
+  }
+
+  renderResults() {
+      return (
+          <View>
+            <Text>Data Loaded</Text>
+          </View>
+      );
   }
 
   // Lifecycle Methods
@@ -51,25 +74,18 @@ class SplashWalls extends Component<{}> {
   }
 
   render() {
-    return (
-      <View style={styles.container}>
-        <Text style={styles.welcome}>
-          Welcome to React Native!
-        </Text>
-        <Text style={styles.instructions}>
-          To get started, edit App.js
-        </Text>
-        <Text style={styles.instructions}>
-          {instructions}
-        </Text>
-      </View>
-    );
+      var {isLoading} = this.state;
+
+      if (isLoading)
+          return this.renderLoadingMessage();
+      else
+          return this.renderResults();
   }
 }
 
 export default class App extends Component<{}> {
     render() {
-        return (<SplashWalls />);
+        return (<SplashWallsComponent />);
     }
 }
 
@@ -79,6 +95,13 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#F5FCFF',
+  },
+  loadingContainer: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#000'
   },
   welcome: {
     fontSize: 20,
