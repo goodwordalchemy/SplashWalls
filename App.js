@@ -12,13 +12,10 @@ import {
   Text,
   View
 } from 'react-native';
+import RandManager from './RandManager'
 
-const instructions = Platform.select({
-  ios: 'Press Cmd+R to reload,\n' +
-    'Cmd+D or shake for dev menu',
-  android: 'Double tap R on your keyboard to reload,\n' +
-    'Shake or press menu button for dev menu',
-});
+const NUM_WALLPAPERS = 5;
+
 
 class SplashWallsComponent extends Component<{}> {
   constructor(props) {
@@ -33,14 +30,20 @@ class SplashWallsComponent extends Component<{}> {
   fetchWallsJSON() {
     var url = 'https://unsplash.it/list';
 
-    console.log('fetching from  ' + url);
-    
     fetch(url)
        .then(response => response.json())
        .then(jsonData => {
-          console.log(jsonData); 
+          var randomIds = RandManager.uniqueRandomNumbers(NUM_WALLPAPERS, 0, jsonData.length);
+          var walls = [];
 
-          this.setState({isLoading: false });
+          randomIds.forEach(randomId => {
+              walls.push(jsonData[randomId]);
+          });
+
+          this.setState({
+              isLoading: false,
+              wallsJSON: [].concat(walls)
+          });
        })
     .catch(error => console.log('Fetch error ' + error));
 
@@ -61,11 +64,19 @@ class SplashWallsComponent extends Component<{}> {
   }
 
   renderResults() {
-      return (
-          <View>
-            <Text>Data Loaded</Text>
-          </View>
-      );
+      var {wallsJSON, isLoading} = this.state;
+
+      if (!isLoading) {
+          return (
+              <View>
+                {wallsJSON.map((wallpaper, index) => {
+                    return (
+                        <Text key={index}>{wallpaper.id}</Text>
+                    );
+                })}
+              </View>
+          );
+      }
   }
 
   // Lifecycle Methods
