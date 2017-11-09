@@ -19,7 +19,37 @@ const instructions = Platform.select({
     'Shake or press menu button for dev menu',
 });
 
-export default class App extends Component<{}> {
+class SplashWalls extends Component<{}> {
+  constructor(props) {
+      super(props);
+
+      console.log('contstructing splashwalls component');
+
+      this.state = {
+          wallsJSON: [],
+          isLoading: true
+      };
+  }
+
+  fetchWallsJSON() {
+    var url = 'https://unsplash.it/list';
+
+    console.log('fetching from  ' + url);
+    
+    fetch(url)
+       .then(response => response.json())
+       .then(jsonData => {
+          console.log(jsonData); 
+       })
+    .catch(error => console.log('Fetch error ' + error));
+
+  }
+
+  // Lifecycle Methods
+  componentDidMount() {
+      this.fetchWallsJSON();
+  }
+
   render() {
     return (
       <View style={styles.container}>
@@ -35,6 +65,12 @@ export default class App extends Component<{}> {
       </View>
     );
   }
+}
+
+export default class App extends Component<{}> {
+    render() {
+        return (<SplashWalls />);
+    }
 }
 
 const styles = StyleSheet.create({
