@@ -20,6 +20,7 @@ import {
   Text,
   View
 } from 'react-native';
+import ShakeEvent from 'react-native-shake-event';
 import Swiper from 'react-native-swiper';
 import Utils from './Utils';
 
@@ -94,6 +95,16 @@ class SplashWallsComponent extends Component<{}> {
 
   handleStartShouldSetPanResponder(e, gestureState) {
       return true;
+  }
+
+  initialize() {
+      this.setState({
+          wallJSON: [],
+          isLoading: true,
+          isHudVisible: false
+      });
+
+      this.cuurentWallIndex = 0;
   }
 
   isDoubleTap(currentTouchTimeStamp, {x0, y0}) {
@@ -211,6 +222,11 @@ class SplashWallsComponent extends Component<{}> {
           onPanResponderGrant: this.handlePanResponderGrant,
           onPanResponderRelease: this.handlePanResponderEnd,
           onPanResponderTerminate: this.handlePanResponderEnd
+      });
+
+      ShakeEvent.addEventListener('shake', () => {
+          this.initialize();
+          this.fetchWallsJSON();
       });
   }
 
