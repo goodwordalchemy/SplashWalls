@@ -6,6 +6,7 @@
 
 import NetworkImage from 'react-native-image-progress';
 import {Circle as Progress} from 'react-native-progress';
+import ProgressHUD from './ProgressHUD';
 import RandManager from './RandManager';
 import React, { Component } from 'react';
 import {
@@ -35,7 +36,8 @@ class SplashWallsComponent extends Component<{}> {
 
       this.state = {
           wallsJSON: [],
-          isLoading: true
+          isLoading: true,
+          isHudVisible: false
       };
 
       this.currentWallIndex = 0;
@@ -120,71 +122,75 @@ class SplashWallsComponent extends Component<{}> {
   }
 
   renderResults() {
-      var {wallsJSON, isLoading} = this.state;
+      var {wallsJSON, isLoading, isHudVisible} = this.state;
 
       if (!isLoading) {
           return (
-              <Swiper
-                dot={
-                  <View 
-                    style={{
-                        backgroundColor: 'rgba(255,255,255,.4)',
-                        width: 8,
-                        height: 8,
-                        borderRadius: 10,
-                        marginLeft: 3,
-                        marginRight: 3,
-                        marginTop: 3,
-                        marginBottom: 3
-                    }} />}
-                activeDot={
-                    <View 
+              <View style={{flex:1}}>
+                  <Swiper
+                    dot={
+                      <View 
                         style={{
-                            backgroundColor: '#fff',
-                            width: 13,
-                            height: 13,
-                            borderRadius: 7,
-                            marginLeft: 7,
-                            marginRight: 7
+                            backgroundColor: 'rgba(255,255,255,.4)',
+                            width: 8,
+                            height: 8,
+                            borderRadius: 10,
+                            marginLeft: 3,
+                            marginRight: 3,
+                            marginTop: 3,
+                            marginBottom: 3
                         }} />}
-                loop={false}
-                onMomentumScrollEnd={this.onMomentumScrollEnd} >
+                    activeDot={
+                        <View 
+                            style={{
+                                backgroundColor: '#fff',
+                                width: 13,
+                                height: 13,
+                                borderRadius: 7,
+                                marginLeft: 7,
+                                marginRight: 7
+                            }} />}
+                    loop={false}
+                    onMomentumScrollEnd={this.onMomentumScrollEnd} >
 
-                {wallsJSON.map((wallpaper, index) => {
-                    var imageURI = `https://picsum.photos/${wallpaper.width}/${wallpaper.height}?image=${wallpaper.id}`;
-                    return (
-                        <View key={index} style={{flex: 1}}>
-                            <NetworkImage
-                                source={{uri: imageURI}}
-                                indicator={Progress}
-                                style={styles.wallpaperImage} 
-                                indicatorProps={{
-                                    color: 'rgba(255,255,255,1)',
-                                    size: 60,
-                                    thickness: 7
-                                }}
-                                {...this.imagePanResponder.panHandlers}
-                                />
-                            <Text style={styles.label}>Photo by</Text>
-                            <Text style={styles.label_authorName}>{wallpaper.author}</Text>
+                    {wallsJSON.map((wallpaper, index) => {
+                        var imageURI = `https://picsum.photos/${wallpaper.width}/${wallpaper.height}?image=${wallpaper.id}`;
+                        return (
+                            <View key={index} style={{flex: 1}}>
+                                <NetworkImage
+                                    source={{uri: imageURI}}
+                                    indicator={Progress}
+                                    style={styles.wallpaperImage} 
+                                    indicatorProps={{
+                                        color: 'rgba(255,255,255,1)',
+                                        size: 60,
+                                        thickness: 7
+                                    }}
+                                    {...this.imagePanResponder.panHandlers}
+                                    />
+                                <Text style={styles.label}>Photo by</Text>
+                                <Text style={styles.label_authorName}>{wallpaper.author}</Text>
 
-                        </View>
-                    );
-                })}
-              </Swiper>
+                            </View>
+                        );
+                    })}
+                  </Swiper>
+              </View>
           );
       }
   }
 
   saveCurrentWallpaperToCameraRoll() {
+      this.setState({isHudVisible: true});
+
       var {wallsJSON} = this.state;
       var currentWall = wallsJSON[this.currentWallIndex];
       var currentWallURL = `https://picsum.photos/${currentWall.width}/${currentWall.height}?image=${currentWall.id}`;
       
-      console.log(currentWallURL);
-
       CameraRoll.saveToCameraRoll(currentWallURL, 'photo')
           .then((data) => {
+              this.setState({isHudVisible: false});
+
               Alert.alert(
                   'Saved',
                   'Wallpaper successfully saved to Camera Roll',
