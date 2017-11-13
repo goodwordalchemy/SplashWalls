@@ -11,6 +11,7 @@
 		"react-native": "0.50.3",
 		"react-native-image-progress": "^1.0.1",
 		"react-native-progress": "^3.4.0",
+		"react-native-shake-event-ios": "^1.0.3",
 		"react-native-swiper": "^1.5.13"
 	},
 	"devDependencies": {
