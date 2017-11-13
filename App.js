@@ -10,6 +10,8 @@ import RandManager from './RandManager';
 import React, { Component } from 'react';
 import {
   ActivityIndicator,
+  Alert,
+  CameraRoll,
   Dimensions,
   PanResponder,
   Platform,
@@ -18,7 +20,11 @@ import {
   View
 } from 'react-native';
 import Swiper from 'react-native-swiper';
+import Utils from './Utils';
 
+
+const DOUBLE_TAP_DELAY = 300; 
+const DOUBLE_TAP_RADIUS = 20;
 const NUM_WALLPAPERS = 5;
 
 var {width, height} = Dimensions.get('window');
@@ -32,7 +38,17 @@ class SplashWallsComponent extends Component<{}> {
           isLoading: true
       };
 
+      this.currentWallIndex = 0;
+
       this.imagePanResponder = {};
+      this.prevTouchInfo = {
+          prevTouchX: 0,
+          prevTouchY: 0,
+          prevTouchTimeStamp: 0
+      };
+
+      this.handlePanResponderGrant = this.handlePanResponderGrant.bind(this);
+      this.onMomentumScrollEnd = this.onMomentumScrollEnd.bind(this);
   }
 
   fetchWallsJSON() {
@@ -62,11 +78,31 @@ class SplashWallsComponent extends Component<{}> {
   }
 
   handlePanResponderGrant(e, gestureState) {
-      console.log('Finger touched the image');
+      var currentTouchTimeStamp = Date.now();
+      
+      if (this.isDoubleTap(currentTouchTimeStamp, gestureState))
+          this.saveCurrentWallpaperToCameraRoll();
+
+      this.prevTouchInfo = {
+          prevTouchX: gestureState.x0,
+          prevTouchY: gestureState.y0,
+          prevTouchTimeStamp: currentTouchTimeStamp
+      };
   }
 
   handleStartShouldSetPanResponder(e, gestureState) {
       return true;
+  }
+
+  isDoubleTap(currentTouchTimeStamp, {x0, y0}) {
+      var {prevTouchX, prevTouchY, prevTouchTimeStamp} = this.prevTouchInfo;
+      var dt = currentTouchTimeStamp - prevTouchTimeStamp;
+
+      return (dt < DOUBLE_TAP_DELAY && Utils.distance(prevTouchX, prevTouchY, x0, y0) < DOUBLE_TAP_RADIUS);
+  }
+
+  onMomentumScrollEnd(e, state, context) {
+      this.currentWallIndex = state.index;
   }
 
   renderLoadingMessage() {
@@ -116,7 +152,6 @@ class SplashWallsComponent extends Component<{}> {
 
                 {wallsJSON.map((wallpaper, index) => {
                     var imageURI = `https://picsum.photos/${wallpaper.width}/${wallpaper.height}?image=${wallpaper.id}`;
-                    console.log(imageURI);
                     return (
                         <View key={index} style={{flex: 1}}>
                             <NetworkImage
@@ -139,6 +174,28 @@ class SplashWallsComponent extends Component<{}> {
               </Swiper>
           );
       }
+  }
+
+  saveCurrentWallpaperToCameraRoll() {
+      var {wallsJSON} = this.state;
+      var currentWall = wallsJSON[this.currentWallIndex];
+      var currentWallURL = `https://picsum.photos/${currentWall.width}/${currentWall.height}?image=${currentWall.id}`;
+      
+      console.log(currentWallURL);
+
+      CameraRoll.saveToCameraRoll(currentWallURL, 'photo')
+          .then((data) => {
+              Alert.alert(
+                  'Saved',
+                  'Wallpaper successfully saved to Camera Roll',
+                  [
+                    {'text': 'High 5!', onPress: () => console.log('OK Pressed!')}
+                  ]
+              );
+          })
+      .catch((err) => {
+              console.log('Error saving to camera roll', err);
+      });
   }
 
   // Lifecycle Methods
